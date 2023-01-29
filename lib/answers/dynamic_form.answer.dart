@@ -3,6 +3,7 @@ import 'package:ui_challenge/answers/dynamic_form_answer_preview.dart';
 import 'package:ui_challenge/cubit/survey_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ui_challenge/model/dynamic_form_question_model.dart';
+import 'package:ui_challenge/widget/feedback.dart';
 
 //TODO: challenge
 //**
@@ -48,10 +49,10 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
   }
 
   void _scrollToBottom() {
-    _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 150,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.linear);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 150), curve: Curves.linear);
+    });
   }
 
   TextStyle kTitleStyle = const TextStyle(
@@ -79,32 +80,28 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
                   decoration: BoxDecoration(
                       border: Border.all(color: Colors.teal.shade300),
                       borderRadius: BorderRadius.circular(6)),
-                  child: SingleChildScrollView(
+                  child: ListView(
                     controller: _scrollController,
                     // reverse: true,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        Form(
-                          key: _surveyFormKey,
-                          child: Column(
-                            children: [
-                              //TODO: List of question as QuestionDisplay Widget
-
-                              ...List.generate(
-                                state.displayQuestions.length,
-                                ((index) => _displayQuestion(
-                                    state.displayQuestions[index], index)!),
-                              ),
-                              //TODO: List of add questions options
-                              const SizedBox(height: 10),
-                              _submitButton(),
-                              const SizedBox(height: 20),
-                            ],
-                          ),
+                    children: [
+                      const SizedBox(height: 10),
+                      Form(
+                        key: _surveyFormKey,
+                        child: Column(
+                          children: [
+                            //TODO: List of question as QuestionDisplay Widget
+                            ...List.generate(
+                              state.displayQuestions.length,
+                              ((index) => _displayQuestion(
+                                  state.displayQuestions[index], index)!),
+                            ),
+                            //TODO: List of add questions options
+                            const SizedBox(height: 10),
+                            _submitButton(),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -124,14 +121,21 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
       onPressed: () {
         surveyQuestions.clear();
         bool result = _surveyFormKey.currentState!.validate();
+
         if (result) {
           _surveyFormKey.currentState!.save();
-          context.read<SurveyCubit>().addSurveyQuestion(surveyQuestions);
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                    value: BlocProvider.of<SurveyCubit>(context),
-                    child: const DynamicFormPreviewPage(),
-                  )));
+          bool noQuestionAdded = surveyQuestions.length == 1;
+          if (noQuestionAdded) {
+            EUFeedback.showSnackBar('Please add some questions', context);
+          } else {
+            context.read<SurveyCubit>().addSurveyQuestion(surveyQuestions);
+            EUFeedback.showSnackBar('Survey Added', context);
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => BlocProvider.value(
+                      value: BlocProvider.of<SurveyCubit>(context),
+                      child: const DynamicFormPreviewPage(),
+                    )));
+          }
         }
       },
     );

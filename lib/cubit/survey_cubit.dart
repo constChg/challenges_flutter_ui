@@ -34,7 +34,6 @@ class SurveyCubit extends Cubit<SurveyInitial> {
       state.survey.clear();
       state.survey.addAll(submitQuestions);
       emit(SurveyInitial(state.displayQuestions, state.survey));
-      print(state.survey.toString());
     } catch (e) {
       emit(state..fail(e.toString()));
     }
