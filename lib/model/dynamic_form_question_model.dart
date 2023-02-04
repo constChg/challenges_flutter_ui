@@ -45,7 +45,7 @@ class QuestionList {
 class Questions {
   final int id;
   final QuestionType type;
-  final String question;
+  final String? question;
   final List<String>? answerOptions;
 
   Questions(this.id, this.type, this.question, this.answerOptions);

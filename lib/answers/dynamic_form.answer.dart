@@ -6,13 +6,8 @@ import 'package:ui_challenge/model/dynamic_form_question_model.dart';
 import 'package:ui_challenge/widget/feedback.dart';
 
 //TODO: challenge
-//**
-//* GlobalKey won't follow
-//* Double AnswerField()
-//* Cannot delete specific AnswerField()
-// */
 
-//TODO always show bottom
+//
 
 typedef void QuestionCallBack(dynamic question, dynamic answers);
 typedef void SCallBack(dynamic value);
@@ -91,9 +86,9 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
                           children: [
                             //TODO: List of question as QuestionDisplay Widget
                             ...List.generate(
-                              state.displayQuestions.length,
+                              state.survey.length,
                               ((index) => _displayQuestion(
-                                  state.displayQuestions[index], index)!),
+                                  state.survey[index], index)!),
                             ),
                             //TODO: List of add questions options
                             const SizedBox(height: 10),
@@ -142,8 +137,7 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
   }
 
   Widget _bottomBar() {
-    int surveylength =
-        context.read<SurveyCubit>().state.displayQuestions.length;
+    int surveylength = context.read<SurveyCubit>().state.survey.length;
 
     return IntrinsicHeight(
         child: Container(
@@ -161,9 +155,10 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
           children: [
             IconButton(
               onPressed: () {
-                context
-                    .read<SurveyCubit>()
-                    .addDisplayQuestion(QuestionType.radio);
+                var id = DateTime.now().millisecond.toInt();
+                var submitQuestion =
+                    Questions(id, QuestionType.checkbox, '', []);
+                context.read<SurveyCubit>().addDisplayQuestion(submitQuestion);
                 if (surveylength > 3) {
                   _scrollToBottom();
                 }
@@ -172,9 +167,9 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
             ),
             IconButton(
               onPressed: () {
-                context
-                    .read<SurveyCubit>()
-                    .addDisplayQuestion(QuestionType.text);
+                var id = DateTime.now().millisecond.toInt();
+                var submitQuestion = Questions(id, QuestionType.text, '', []);
+                context.read<SurveyCubit>().addDisplayQuestion(submitQuestion);
                 if (surveylength > 3) {
                   _scrollToBottom();
                 }
@@ -183,9 +178,10 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
             ),
             IconButton(
               onPressed: () {
-                context
-                    .read<SurveyCubit>()
-                    .addDisplayQuestion(QuestionType.checkbox);
+                var id = DateTime.now().millisecond.toInt();
+                var submitQuestion =
+                    Questions(id, QuestionType.checkbox, '', []);
+                context.read<SurveyCubit>().addDisplayQuestion(submitQuestion);
                 if (surveylength > 3) {
                   _scrollToBottom();
                 }
@@ -198,42 +194,47 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
     ));
   }
 
-  Widget? _displayQuestion(QuestionType type, int itemIndex) {
+  Widget? _displayQuestion(Questions question, int itemIndex) {
     int id = DateTime.now().microsecond + DateTime.now().millisecond;
-    switch (type) {
+    switch (question.type) {
       case QuestionType.title:
         return QuestionField(
-          type: type,
+          key: ValueKey(question.id),
+          type: question.type,
           textCallBack: (question, answer) {
-            surveyQuestions.add(Questions(id, type, question, answer));
+            // surveyQuestions.add(Questions(id, question.type, question, answer));
           },
           itemIndex: itemIndex,
         );
       case QuestionType.text:
         return QuestionField(
-          type: type,
+          key: ValueKey(question.id),
+          type: question.type,
           textCallBack: (question, answer) {
-            surveyQuestions.add(Questions(id, type, question, null));
+            // surveyQuestions.add(Questions(id, question.type, question, null));
           },
           itemIndex: itemIndex,
         );
       case QuestionType.radio:
         return QuestionField(
-          type: type,
+          key: ValueKey(question.id),
+          type: question.type,
           textCallBack: (question, answer) {
             // storedQuestions.add(RadioQuestion(id, type, question, answer));
             if (answer != null) {
-              surveyQuestions.add(Questions(id, type, question, answer));
+              // surveyQuestions
+              //     .add(Questions(id, question.type, question, answer));
             }
           },
           itemIndex: itemIndex,
         );
       case QuestionType.checkbox:
         return QuestionField(
-          type: type,
+          key: ValueKey(question.id),
+          type: question.type,
           textCallBack: (question, answer) {
             if (answer != null) {
-              surveyQuestions.add(Questions(id, type, question, answer));
+              // surveyQuestions.add(Questions(id, type, question, answer));
             }
           },
           itemIndex: itemIndex,
@@ -458,3 +459,10 @@ class _QuestionFieldState extends State<QuestionField> {
     }
   }
 }
+
+// MainBody... state.survey (QuestionField)
+// QuestionField class... AnswerField class
+// AnswerField class --> contex.read<SurveyCubit>().add(Question())
+
+// Main submit --> onSaved CallBack
+//

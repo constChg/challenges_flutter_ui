@@ -134,7 +134,7 @@ class _SurveyCheckboxQuestionState extends State<SurveyCheckboxQuestion> {
       padding: const EdgeInsets.only(top: 20),
       child: Column(
         children: [
-          Text(widget.item.question, style: StyleClass.kSurveyQuestion),
+          // Text(widget.item.question, style: StyleClass.kSurveyQuestion),
           ...widget.item.answerOptions!.map((e) {
             int index = widget.item.answerOptions!.indexOf(e);
             return CheckboxListTile(
@@ -180,10 +180,10 @@ class _SurveyRadioQuestionState extends State<SurveyRadioQuestion> {
       padding: const EdgeInsets.only(top: 10),
       child: Column(
         children: [
-          Text(
-            widget.item.question,
-            style: StyleClass.kSurveyQuestion,
-          ),
+          // Text(
+          //   widget.item.question,
+          //   style: StyleClass.kSurveyQuestion,
+          // ),
           ...widget.item.answerOptions!.asMap().entries.map((options) {
             return RadioListTile(
               visualDensity: VisualDensity.compact,
@@ -220,10 +220,10 @@ class SurveyTextQuestionState extends State<SurveyTextQuestion> {
       child: Column(
         children: [
           const SizedBox(height: 10),
-          Text(
-            widget.item.question,
-            style: StyleClass.kSurveyQuestion,
-          ),
+          // Text(
+          //   widget.item.question,
+          //   style: StyleClass.kSurveyQuestion,
+          // ),
           const SizedBox(height: 10),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
