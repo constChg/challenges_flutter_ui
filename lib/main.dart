@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ui_challenge/base_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ui_challenge/const/challenges_list.dart';
 import 'package:ui_challenge/const/theme.dart';
+import 'package:ui_challenge/cubit/survey_cubit.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,13 +14,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const ChallengesHomePage(title: 'Flutter Demo Home Page'),
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: MultiBlocProvider(providers: [
+          BlocProvider(
+            create: (context) => SurveyCubit(),
+          ),
+        ], child: const ChallengesHomePage(title: 'Flutter Demo Home Page')));
   }
 }
 
@@ -34,12 +38,6 @@ class ChallengesHomePage extends StatefulWidget {
 class _ChallengesHomePageState extends State<ChallengesHomePage> {
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -56,13 +54,17 @@ class _ChallengesHomePageState extends State<ChallengesHomePage> {
                       e.key,
                       style: StyleClass.tileLeadingTStyle,
                     ),
-                    trailing: TextButton(
+                    trailing: ElevatedButton(
+                        style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(Colors.black)),
                         onPressed: () => Navigator.of(context).push(
                             MaterialPageRoute(builder: e.value.answerBuilder)),
-                        child: const Text(
-                          'Submit Answer',
+                        child: Text(
+                          'Submit',
                           textAlign: TextAlign.center,
-                          style: StyleClass.tileButtonTStyle,
+                          style: StyleClass.homeButtonTStyle
+                              .copyWith(color: Colors.white),
                         )),
                     onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: e.value.solutionBuilder)),

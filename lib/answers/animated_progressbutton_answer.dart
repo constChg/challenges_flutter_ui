@@ -1,90 +1,315 @@
+//TODO: streamline animationFlow, fix CustomPaintPath
+
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-class AnimatedProgressButtonAnswer extends StatelessWidget {
+class AnimatedProgressButtonAnswer extends StatefulWidget {
   const AnimatedProgressButtonAnswer({super.key});
 
   static const title = 'Animated Progress Button Answer';
+
+  @override
+  State<AnimatedProgressButtonAnswer> createState() =>
+      _AnimatedProgressButtonAnswerState();
+}
+
+class _AnimatedProgressButtonAnswerState
+    extends State<AnimatedProgressButtonAnswer> with TickerProviderStateMixin {
+  late AnimationController _progressAniController;
+  late AnimationController _toLoadController;
+  late AnimationController _loadedController;
+  late AnimationController _loadingController;
+  late AnimationController _buttonWidthController;
+
+  late Animation<double> progressAni;
+  late Animation<double> buttonWidthAni;
+  late Animation<double> heightAni;
+  late Animation<double> strokeWidthAni;
+  late Animation<Offset> uploadSlideAni;
+  late Animation<double> uploadOpacity;
+  late Animation<Offset> loadingSlideAni;
+  late Animation<double> loadingOpacityAni;
+  late Animation<Offset> loadedSlideAni;
+  late Animation<double> loadedOpacityAni;
+  late RenderBox buttonBox;
+  double? _maxWidth = 280;
+  final GlobalKey _buttonKey = GlobalKey();
+
+  TextStyle tileButtonTStyle = const TextStyle(
+      fontSize: 35, color: Colors.white, fontWeight: FontWeight.bold);
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    _progressAniController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1500))
+      ..addListener(() {
+        if (_progressAniController.value > 0.1 &&
+            _progressAniController.value < 0.90 &&
+            _progressAniController.status == AnimationStatus.forward) {
+          _toLoadController.forward();
+          _loadingController.forward(from: 0.2);
+        }
+        if (_progressAniController.value > 0.95 &&
+            _progressAniController.status == AnimationStatus.forward) {
+          _loadedController.forward();
+          _loadingController.animateTo(1.0,
+              duration: const Duration(milliseconds: 200));
+        }
+
+        if (_progressAniController.value < 0.1 &&
+            _progressAniController.status == AnimationStatus.reverse) {
+          _toLoadController.reverse();
+          _loadingController.animateTo(0.0,
+              duration: const Duration(milliseconds: 200));
+        }
+        if (_progressAniController.value < 1.0 &&
+            _progressAniController.value > 0.1 &&
+            _progressAniController.status == AnimationStatus.reverse) {
+          _loadedController.reverse();
+          _loadingController.animateTo(0.6,
+              duration: const Duration(milliseconds: 200));
+        }
+      });
+
+    _toLoadController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+
+    _buttonWidthController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+    _loadedController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
+    _loadingController = AnimationController(
+        vsync: this, duration: const Duration(microseconds: 5000));
+
+    progressAni =
+        Tween<double>(begin: 0, end: 100).animate(_progressAniController);
+
+    strokeWidthAni =
+        Tween<double>(begin: 11, end: 0).animate(_loadedController);
+
+    uploadSlideAni =
+        Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, -1))
+            .animate(_toLoadController);
+
+    uploadOpacity =
+        Tween<double>(begin: 1.0, end: 0.0).animate(_toLoadController);
+
+    loadingSlideAni = TweenSequence<Offset>([
+      TweenSequenceItem(
+          tween:
+              Tween<Offset>(begin: const Offset(0, 1), end: const Offset(0, 0)),
+          weight: 20),
+      TweenSequenceItem(
+          tween:
+              Tween<Offset>(begin: const Offset(0, 0), end: const Offset(0, 0)),
+          weight: 80),
+      TweenSequenceItem(
+          tween: Tween<Offset>(
+              begin: const Offset(0, 0), end: const Offset(0, -1)),
+          weight: 20),
+    ]).animate(_loadingController);
+
+    loadingOpacityAni = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.0), weight: 80),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 0.0), weight: 20),
+    ]).animate(_loadingController);
+
+    loadedSlideAni =
+        Tween<Offset>(begin: const Offset(0, 1), end: const Offset(0, 0))
+            .animate(_loadedController);
+
+    loadedOpacityAni =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_loadedController);
+
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      //TODO: error message
+
+      // final RenderBox renderBox =
+      //     _buttonKey.currentContext?.findRenderObject() as RenderBox;
+      // _maxWidth = renderBox.size.width;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    _progressAniController.dispose();
+    _loadedController.dispose();
+    _loadingController.dispose();
+    _toLoadController.dispose();
+    super.dispose();
+  }
+
+  bool isToogle = false;
 
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
 
-    return SizedBox(
+    return Container(
+      color: Colors.black87,
       height: height,
       width: width,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          SizedBox(
-            height: 100,
-            width: 300,
-            child: CustomPaint(
-              child: null,
-              painter: ProgressPainter(),
+          InkWell(
+            onTap: () {
+              if (_progressAniController.isCompleted) {
+                _progressAniController.reverse();
+                isToogle = true;
+                return;
+              }
+              _progressAniController.forward();
+              isToogle = false;
+            },
+            child: AnimatedBuilder(
+              animation: _progressAniController,
+              builder: (context, child) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 80,
+                  width: _progressAniController.value > 0.9 ? _maxWidth : 220,
+                  child: CustomPaint(
+                    painter: ProgressPainter(
+                      progress: progressAni.value,
+                      strokeWidth: strokeWidthAni.value,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        WordTransition(
+                          opacityAni: uploadOpacity,
+                          slidingAni: uploadSlideAni,
+                          widgetList: <Widget>[
+                            const Icon(
+                              Icons.arrow_upward,
+                              size: 45,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              'Upload',
+                              style: tileButtonTStyle,
+                            ),
+                          ],
+                        ),
+                        WordTransition(
+                          opacityAni: loadingOpacityAni,
+                          slidingAni: loadingSlideAni,
+                          widgetList: <Widget>[
+                            Text(
+                              'Uploading',
+                              style: tileButtonTStyle,
+                            ),
+                          ],
+                        ),
+                        WordTransition(
+                            opacityAni: loadedOpacityAni,
+                            slidingAni: loadedSlideAni,
+                            widgetList: <Widget>[
+                              Text(
+                                'Uploaded',
+                                style: tileButtonTStyle,
+                              )
+                            ])
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
 
+class WordTransition extends StatelessWidget {
+  const WordTransition(
+      {Key? key,
+      required this.opacityAni,
+      required this.slidingAni,
+      required this.widgetList})
+      : super(key: key);
+
+  final Animation<double> opacityAni;
+  final Animation<Offset> slidingAni;
+  final List<Widget> widgetList;
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: opacityAni,
+      child: SlideTransition(
+        textDirection: TextDirection.rtl,
+        position: slidingAni,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: widgetList,
+        ),
+      ),
+    );
+  }
+}
+
 class ProgressPainter extends CustomPainter {
+  double progress;
+  double strokeWidth;
+
+  ProgressPainter({
+    required this.progress,
+    required this.strokeWidth,
+  });
   @override
   void paint(Canvas canvas, Size size) {
     double height = size.height;
     double width = size.width;
     double radius = height / 2;
-
-    Rect rectCL = Rect.fromCenter(
-        center: Offset(height / 2, height / 2),
-        width: radius * 2,
-        height: radius * 2);
-    Rect rectCR = Rect.fromCenter(
-        center: Offset(width - (height / 2), height / 2),
-        width: radius * 2,
-        height: radius * 2);
+    Offset startPoint = Offset(radius + (width * 0.1), 0);
+    Offset archEndLeft = Offset(radius, height);
+    Offset archEndRight = Offset(width - radius, 0);
 
     Paint borderPaint = Paint()
       ..color = Colors.grey.shade300
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.butt;
 
     Paint buttonPaint = Paint()
       ..color = Colors.teal
       ..style = PaintingStyle.fill;
+    // ..strokeWidth = strokeSize;
 
     Path buttonPath = Path()
-      ..moveTo(0, 0)
-      ..addArc(rectCL, -pi * 0.5, -pi)
+      ..moveTo(startPoint.dx, startPoint.dy)
+      ..lineTo(radius, 0)
+      ..arcToPoint(archEndLeft,
+          radius: const Radius.circular(1), clockwise: false)
       ..lineTo(width - radius, height)
-      ..addArc(rectCR, pi * 0.5, -pi)
+      ..arcToPoint(archEndRight,
+          radius: const Radius.circular(1), clockwise: false)
       ..lineTo(radius, 0);
+    // ..lineTo(width, 0);
 
-    Path extractedPath;
+    var pathMetrics = buttonPath.computeMetrics();
+    var borderPath = pathMetrics.first;
+    var progressPath =
+        borderPath.extractPath(0, borderPath.length * progress / 100);
 
-    var buttonPathMetrics = buttonPath.computeMetrics();
-    List<Path> pathList = [];
-    for (var PathMetric in buttonPathMetrics) {
-      pathList.add(PathMetric.extractPath(0, PathMetric.length));
-    }
-
-    Path testPath =
-        Path.combine(PathOperation.difference, pathList[0], pathList[1]);
-
-    // Path extractedPath =
-    //     buttonMetrics.first.extractPath(0, buttonPathLenght * 0.8);
-
+    canvas.drawPath(progressPath, borderPaint);
     canvas.drawPath(buttonPath, buttonPaint);
-    for (var i in pathList) {
-      int index = pathList.indexOf(i);
-      canvas.drawPath(pathList[index], borderPaint);
-    }
   }
 
   @override
