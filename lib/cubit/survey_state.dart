@@ -4,7 +4,6 @@ part of 'survey_cubit.dart';
 abstract class SurveyState with StatusMixin {}
 
 class SurveyInitial extends SurveyState {
-  // late List<Questions> displayQuestions = [];
   late List<Questions> survey = [];
 
   SurveyInitial(this.survey);

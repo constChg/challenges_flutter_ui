@@ -66,8 +66,8 @@ class _ChallengesHomePageState extends State<ChallengesHomePage> {
                           style: StyleClass.homeButtonTStyle
                               .copyWith(color: Colors.white),
                         )),
-                    onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: e.value.solutionBuilder)),
+                    // onTap: () => Navigator.of(context).push(
+                    //     MaterialPageRoute(builder: e.value.solutionBuilder)),
                   ),
                 ),
               )
