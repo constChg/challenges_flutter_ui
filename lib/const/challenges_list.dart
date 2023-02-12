@@ -8,7 +8,7 @@ import 'package:ui_challenge/challenges/animated_progressbutton_solution.dart.da
 import 'package:ui_challenge/challenges/overlay_solution_page.dart';
 import 'package:ui_challenge/cubit/survey_cubit.dart';
 
-import '../answers/dynamic_form.answer.dart';
+import '../answers/dynamic_form_answer.dart';
 import '../base_page.dart';
 import '../challenges/animated_tick_solution.dart';
 

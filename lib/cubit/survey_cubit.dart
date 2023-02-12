@@ -10,32 +10,31 @@ class SurveyCubit extends Cubit<SurveyInitial> {
       : super(
             SurveyInitial([Questions(0, QuestionType.title, '', [])])..empty());
 
-  void addDisplayQuestion(Questions type) {
+  void addQuestion(Questions question) {
     try {
       emit(state..loading());
-      var result = state.survey..add(type);
+      var result = state.survey..add(question);
       emit(SurveyInitial(result)..success());
     } catch (e) {
       emit(state..fail(e.toString()));
     }
   }
 
-  void removeDisplayQuestion(int index) {
+  void removeQuestion(Questions question) {
     try {
       emit(state..loading());
-      var result = state.survey..removeAt(index);
+      int removeIndex = state.survey.indexOf(question);
+      var result = state.survey..removeAt(removeIndex);
       emit(SurveyInitial(result)..success());
     } catch (e) {
       emit(state..fail(e.toString()));
     }
   }
 
-  void addSurveyQuestion(List<Questions> submitQuestions) {
+  void resetSurvey() {
     try {
       emit(state..loading());
-      state.survey.clear();
-      state.survey.addAll(submitQuestions);
-      emit(SurveyInitial(state.survey));
+      emit(SurveyInitial([Questions(0, QuestionType.title, '', [])]));
     } catch (e) {
       emit(state..fail(e.toString()));
     }

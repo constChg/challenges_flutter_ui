@@ -45,8 +45,8 @@ class QuestionList {
 class Questions {
   final int id;
   final QuestionType type;
-  final String? question;
-  final List<String>? answerOptions;
+  String? question;
+  List<String>? answerOptions;
 
   Questions(this.id, this.type, this.question, this.answerOptions);
 }
@@ -58,7 +58,7 @@ class TextQuestion implements Questions {
   @override
   final QuestionType type;
   @override
-  final String question;
+  String? question;
   @override
   List<String>? answerOptions;
 
@@ -72,9 +72,9 @@ class RadioQuestion implements Questions {
   @override
   final QuestionType type;
   @override
-  final String question;
+  String? question;
   @override
-  final List<String> answerOptions;
+  List<String>? answerOptions;
 
   RadioQuestion(this.id, this.type, this.question, this.answerOptions);
 }
@@ -86,9 +86,9 @@ class CheckboxQuestion implements Questions {
   @override
   final QuestionType type;
   @override
-  final String question;
+  String? question;
   @override
-  final List<String> answerOptions;
+  List<String>? answerOptions;
 
   CheckboxQuestion(this.id, this.type, this.question, this.answerOptions);
 }
@@ -100,9 +100,9 @@ class MultipleChoiceQuestion implements Questions {
   @override
   final QuestionType type;
   @override
-  final String question;
+  String? question;
   @override
-  final List<String> answerOptions;
+  List<String>? answerOptions;
 
   MultipleChoiceQuestion(this.id, this.type, this.question, this.answerOptions);
 }

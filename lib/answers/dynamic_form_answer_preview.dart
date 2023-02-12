@@ -53,7 +53,11 @@ class _DynamicFormPreviewPageState extends State<DynamicFormPreviewPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ...state.survey.map((e) => _buildSurvey(e)).toList(),
+                      ...state.survey
+                          .asMap()
+                          .entries
+                          .map((e) => _buildSurvey(e.value, e.key))
+                          .toList(),
                       _submitButton(),
                     ],
                   ),
@@ -71,18 +75,18 @@ class _DynamicFormPreviewPageState extends State<DynamicFormPreviewPage> {
         label: const Text('submit'));
   }
 
-  Widget _buildSurvey(Questions item) {
+  Widget _buildSurvey(Questions item, int questionNum) {
     switch (item.type) {
       case QuestionType.title:
         return SurveyTitle(item);
       case QuestionType.text:
-        return SurveyTextQuestion(item);
+        return SurveyTextQuestion(item, questionNum);
       case QuestionType.radio:
-        return SurveyRadioQuestion(item);
+        return SurveyRadioQuestion(item, questionNum);
       case QuestionType.checkbox:
-        return SurveyCheckboxQuestion(item);
+        return SurveyCheckboxQuestion(item, questionNum);
       default:
-        return Text('WIP');
+        return const Text('WIP');
     }
   }
 }
@@ -90,7 +94,7 @@ class _DynamicFormPreviewPageState extends State<DynamicFormPreviewPage> {
 class SurveyTitle extends StatelessWidget {
   final Questions item;
 
-  SurveyTitle(this.item, {super.key});
+  const SurveyTitle(this.item, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +103,8 @@ class SurveyTitle extends StatelessWidget {
       children: [
         Text(
           'Survey: ${item.question}',
-          style: StyleClass.kSurveyQuestion,
+          style: StyleClass.kSurveyQuestion
+              .copyWith(decoration: TextDecoration.underline),
         ),
         const SizedBox(height: 10),
       ],
@@ -109,8 +114,9 @@ class SurveyTitle extends StatelessWidget {
 
 class SurveyCheckboxQuestion extends StatefulWidget {
   final Questions item;
+  final int questionNum;
 
-  SurveyCheckboxQuestion(this.item, {super.key});
+  const SurveyCheckboxQuestion(this.item, this.questionNum, {super.key});
 
   @override
   State<SurveyCheckboxQuestion> createState() => _SurveyCheckboxQuestionState();
@@ -134,7 +140,12 @@ class _SurveyCheckboxQuestionState extends State<SurveyCheckboxQuestion> {
       padding: const EdgeInsets.only(top: 20),
       child: Column(
         children: [
-          // Text(widget.item.question, style: StyleClass.kSurveyQuestion),
+          const SizedBox(height: 10),
+          Text(
+            'Q${widget.questionNum}: ${widget.item.question}',
+            style: StyleClass.kSurveyQuestion,
+          ),
+          const SizedBox(height: 10),
           ...widget.item.answerOptions!.map((e) {
             int index = widget.item.answerOptions!.indexOf(e);
             return CheckboxListTile(
@@ -156,8 +167,9 @@ class _SurveyCheckboxQuestionState extends State<SurveyCheckboxQuestion> {
 
 class SurveyRadioQuestion extends StatefulWidget {
   final Questions item;
+  final int questionNum;
 
-  const SurveyRadioQuestion(this.item, {super.key});
+  const SurveyRadioQuestion(this.item, this.questionNum, {super.key});
 
   @override
   State<SurveyRadioQuestion> createState() => _SurveyRadioQuestionState();
@@ -180,10 +192,12 @@ class _SurveyRadioQuestionState extends State<SurveyRadioQuestion> {
       padding: const EdgeInsets.only(top: 10),
       child: Column(
         children: [
-          // Text(
-          //   widget.item.question,
-          //   style: StyleClass.kSurveyQuestion,
-          // ),
+          const SizedBox(height: 10),
+          Text(
+            'Q${widget.questionNum}: ${widget.item.question}',
+            style: StyleClass.kSurveyQuestion,
+          ),
+          const SizedBox(height: 10),
           ...widget.item.answerOptions!.asMap().entries.map((options) {
             return RadioListTile(
               visualDensity: VisualDensity.compact,
@@ -204,9 +218,10 @@ class _SurveyRadioQuestionState extends State<SurveyRadioQuestion> {
 }
 
 class SurveyTextQuestion extends StatefulWidget {
-  Questions item;
+  final Questions item;
+  final int questionNum;
 
-  SurveyTextQuestion(this.item, {super.key});
+  const SurveyTextQuestion(this.item, this.questionNum, {super.key});
 
   @override
   State<SurveyTextQuestion> createState() => SurveyTextQuestionState();
@@ -220,10 +235,10 @@ class SurveyTextQuestionState extends State<SurveyTextQuestion> {
       child: Column(
         children: [
           const SizedBox(height: 10),
-          // Text(
-          //   widget.item.question,
-          //   style: StyleClass.kSurveyQuestion,
-          // ),
+          Text(
+            'Q${widget.questionNum}: ${widget.item.question}',
+            style: StyleClass.kSurveyQuestion,
+          ),
           const SizedBox(height: 10),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),

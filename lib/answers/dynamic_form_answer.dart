@@ -59,6 +59,7 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
   Widget build(BuildContext context) {
     // double screenHeight = MediaQuery.of(context).size.height;
     // double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    // SurveyCubit surveyBloc = BlocProvider.of<SurveyCubit>(context);
     return BlocBuilder<SurveyCubit, SurveyInitial>(
       builder: (context, state) {
         return Column(
@@ -114,16 +115,16 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
       icon: const Icon(Icons.send_outlined),
       label: const Text('submit'),
       onPressed: () {
-        surveyQuestions.clear();
         bool result = _surveyFormKey.currentState!.validate();
 
         if (result) {
           _surveyFormKey.currentState!.save();
-          bool noQuestionAdded = surveyQuestions.length == 1;
+          bool noQuestionAdded =
+              context.read<SurveyCubit>().state.survey.length == 1;
           if (noQuestionAdded) {
             EUFeedback.showSnackBar('Please add some questions', context);
+            return;
           } else {
-            context.read<SurveyCubit>().addSurveyQuestion(surveyQuestions);
             EUFeedback.showSnackBar('Survey Added', context);
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
@@ -156,9 +157,8 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
             IconButton(
               onPressed: () {
                 var id = DateTime.now().millisecond.toInt();
-                var submitQuestion =
-                    Questions(id, QuestionType.checkbox, '', []);
-                context.read<SurveyCubit>().addDisplayQuestion(submitQuestion);
+                var newQuestion = Questions(id, QuestionType.radio, '', []);
+                context.read<SurveyCubit>().addQuestion(newQuestion);
                 if (surveylength > 3) {
                   _scrollToBottom();
                 }
@@ -168,8 +168,8 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
             IconButton(
               onPressed: () {
                 var id = DateTime.now().millisecond.toInt();
-                var submitQuestion = Questions(id, QuestionType.text, '', []);
-                context.read<SurveyCubit>().addDisplayQuestion(submitQuestion);
+                var newQuestion = Questions(id, QuestionType.text, '', []);
+                context.read<SurveyCubit>().addQuestion(newQuestion);
                 if (surveylength > 3) {
                   _scrollToBottom();
                 }
@@ -179,9 +179,8 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
             IconButton(
               onPressed: () {
                 var id = DateTime.now().millisecond.toInt();
-                var submitQuestion =
-                    Questions(id, QuestionType.checkbox, '', []);
-                context.read<SurveyCubit>().addDisplayQuestion(submitQuestion);
+                var newQuestion = Questions(id, QuestionType.checkbox, '', []);
+                context.read<SurveyCubit>().addQuestion(newQuestion);
                 if (surveylength > 3) {
                   _scrollToBottom();
                 }
@@ -196,20 +195,24 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
 
   Widget? _displayQuestion(Questions question, int itemIndex) {
     int id = DateTime.now().microsecond + DateTime.now().millisecond;
+    // SurveyCubit cubit =  BlocProvider.of<SurveyCubit>(context);
+
     switch (question.type) {
       case QuestionType.title:
         return QuestionField(
-          key: ValueKey(question.id),
-          type: question.type,
+          // key: ValueKey(question.id),
+          question: question,
           textCallBack: (question, answer) {
+            // Question
+            // cubit.addQuestion(question)
             // surveyQuestions.add(Questions(id, question.type, question, answer));
           },
           itemIndex: itemIndex,
         );
       case QuestionType.text:
         return QuestionField(
-          key: ValueKey(question.id),
-          type: question.type,
+          // key: ValueKey(question.id),
+          question: question,
           textCallBack: (question, answer) {
             // surveyQuestions.add(Questions(id, question.type, question, null));
           },
@@ -217,8 +220,8 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
         );
       case QuestionType.radio:
         return QuestionField(
-          key: ValueKey(question.id),
-          type: question.type,
+          // key: ValueKey(question.id),
+          question: question,
           textCallBack: (question, answer) {
             // storedQuestions.add(RadioQuestion(id, type, question, answer));
             if (answer != null) {
@@ -230,8 +233,8 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
         );
       case QuestionType.checkbox:
         return QuestionField(
-          key: ValueKey(question.id),
-          type: question.type,
+          // key: ValueKey(question.id),
+          question: question,
           textCallBack: (question, answer) {
             if (answer != null) {
               // surveyQuestions.add(Questions(id, type, question, answer));
@@ -246,14 +249,14 @@ class _DynamicFormAnswerPageState extends State<DynamicFormAnswerPage> {
 }
 
 class QuestionField extends StatefulWidget {
-  QuestionType type;
+  Questions question;
   QuestionCallBack textCallBack;
   List<Widget>? optionField;
   int itemIndex;
 
   QuestionField(
       {required this.textCallBack,
-      required this.type,
+      required this.question,
       required this.itemIndex,
       super.key});
 
@@ -263,14 +266,14 @@ class QuestionField extends StatefulWidget {
 
 class _QuestionFieldState extends State<QuestionField> {
   final List<String> _answers = [];
-  int counter = 1;
+  int counter = 2;
 
   @override
   Widget build(BuildContext context) {
-    String title = _getQuestionTitle(widget.type);
-    bool hasAnswersOptions =
-        (widget.type != QuestionType.title && widget.type != QuestionType.text);
-    bool isNotTitle = widget.type != QuestionType.title;
+    String title = _getQuestionTitle(widget.question.type);
+    bool hasAnswersOptions = (widget.question.type != QuestionType.title &&
+        widget.question.type != QuestionType.text);
+    bool isNotTitle = widget.question.type != QuestionType.title;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -292,7 +295,7 @@ class _QuestionFieldState extends State<QuestionField> {
                     onTap: () {
                       context
                           .read<SurveyCubit>()
-                          .removeDisplayQuestion(widget.itemIndex);
+                          .removeQuestion(widget.question);
                     },
                     child: const Icon(Icons.highlight_remove_outlined))
             ],
@@ -325,8 +328,7 @@ class _QuestionFieldState extends State<QuestionField> {
               return null;
             },
             onSaved: (newValue) {
-              _answers.clear();
-              widget.textCallBack(newValue, _answers);
+              widget.question.question = newValue;
             },
           ),
           if (hasAnswersOptions)
@@ -349,7 +351,7 @@ class _QuestionFieldState extends State<QuestionField> {
   }
 
   Widget _buildAnswerField(int index, bool isLast) {
-    bool notOnlyOne = index != 0;
+    bool atLeastTwo = index != 0;
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Row(
@@ -358,7 +360,7 @@ class _QuestionFieldState extends State<QuestionField> {
         children: [
           _answerField(index),
           if (isLast) ...[
-            if (notOnlyOne)
+            if (atLeastTwo)
               IconButton(
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints.tight(const Size.square(24)),
@@ -436,7 +438,11 @@ class _QuestionFieldState extends State<QuestionField> {
               return null;
             },
             onSaved: (newValue) {
-              _answers.add(newValue!);
+              if (widget.question.answerOptions!.contains(newValue)) {
+                return;
+              }
+
+              widget.question.answerOptions!.add(newValue!);
             },
           ),
         ),
